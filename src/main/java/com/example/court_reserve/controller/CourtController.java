@@ -5,6 +5,9 @@ import java.util.Map;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +38,11 @@ public class CourtController {
         @ApiResponse(responseCode = "403", description = "Acesso proibido.")
     })
     @GetMapping
-    public ResponseEntity<List<CourtResponse>> getAllCourts(){
-        List<CourtResponse> courts=courtService.findAll()
-                .stream()
-                .map(court -> CourtMapper.toCourtResponse(court))
-                .toList();
-        return ResponseEntity.ok(courts);
+    public ResponseEntity<Page<CourtResponse>> getAllCourts(@ParameterObject Pageable pageable){
+        Page<CourtResponse> page=courtService.findAll(pageable)
+                .map(CourtMapper::toCourtResponse);
+
+        return ResponseEntity.ok(page);
     }
     @Operation(summary = "Buscar quadra por ID", description = "Retorna uma quadra específica pelo ID.")
     @ApiResponses({
@@ -104,5 +106,10 @@ public class CourtController {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "Quadra não encontrada. O ID informado não existe."));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
     }
 }

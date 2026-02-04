@@ -6,6 +6,8 @@ import com.example.court_reserve.entity.Booking;
 import com.example.court_reserve.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +20,8 @@ public class BookingService {
     private final BookingRepository repository;
     private final BookingRepository bookingRepository;
 
-    public List<Booking> findAll() {
-        return repository.findAll();
+    public Page<Booking> findAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Optional<Booking> findById(Long id) {

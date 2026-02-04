@@ -5,6 +5,8 @@ import com.example.court_reserve.entity.User;
 import com.example.court_reserve.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +20,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
-    public List<User> findAll(){
-        return repository.findAll();
+    public Page<User> findAll(Pageable pageable){
+        return repository.findAll(pageable);
     }
 
     public Optional<User> findById(Long id){

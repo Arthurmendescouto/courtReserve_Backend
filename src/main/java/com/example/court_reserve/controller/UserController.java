@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -58,11 +61,9 @@ public class UserController {
         @ApiResponse(responseCode = "403", description = "Acesso proibido.")
     })
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers(){
-        List<UserResponse> users=userService.findAll()
-                .stream()
-                .map(user -> UserMapper.toUserResponse(user))
-                .toList();
+    public ResponseEntity<Page<UserResponse>> getAllUsers(@ParameterObject Pageable pageable){
+        Page<UserResponse> users=userService.findAll(pageable)
+                .map(user -> UserMapper.toUserResponse(user));
         return ResponseEntity.ok(users);
     }
     @Operation(summary = "Buscar usuário por ID", description = "Retorna um usuário específico pelo ID.")

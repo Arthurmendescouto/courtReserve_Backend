@@ -8,6 +8,8 @@ import com.example.court_reserve.repository.BookingRepository;
 import com.example.court_reserve.repository.CourtRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,25 +19,25 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CourtService {
     private final CourtRepository repository;
-    private final CourtRepository courtRepository;
 
-    public List<Court> findAll(){
-        return repository.findAll();
+
+    public Page<Court> findAll(Pageable pageable){
+        return repository.findAll(pageable);
     }
-
     public Optional<Court> findById(Long id){
         return repository.findById(id);
     }
 
     public Court save(Court court){
+        court.validate();
         return repository.save(court);
     }
 
     public void delete(Long id) {
-        if (!courtRepository.existsById(id)) {
+        if (!repository.existsById(id)) {
             throw new EmptyResultDataAccessException("Usuário não encontrado com o ID: " + id, 1);
         }
-        courtRepository.deleteById(id);
+        repository.deleteById(id);
     }
 
     public Court updateCourt(Long id, CourtRequest request) {
@@ -54,6 +56,11 @@ public class CourtService {
         if (request.isAvailable() != null) {
             court.setAvailable(request.isAvailable());
         }
+        court.validate();
         return repository.save(court);
+    }
+
+    public long count() {
+        return repository.count();
     }
 }

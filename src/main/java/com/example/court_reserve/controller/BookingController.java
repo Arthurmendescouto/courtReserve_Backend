@@ -3,6 +3,9 @@ package com.example.court_reserve.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,11 +46,9 @@ public class BookingController {
         @ApiResponse(responseCode = "403", description = "Acesso proibido.")
     })
     @GetMapping
-    public ResponseEntity<List<BookingResponse>> getAllBookings(){
-        List<BookingResponse> bookings=bookingService.findAll()
-                .stream()
-                .map(booking -> BookingMapper.toBookingResponse(booking))
-                .toList();
+    public ResponseEntity<Page<BookingResponse>> getAllBookings(@ParameterObject Pageable pageable){
+        Page<BookingResponse> bookings=bookingService.findAll(pageable)
+                .map(booking -> BookingMapper.toBookingResponse(booking));
         return ResponseEntity.ok(bookings);
     }
     @Operation(summary = "Buscar agendamento por ID", description = "Retorna um agendamento específico pelo ID.")

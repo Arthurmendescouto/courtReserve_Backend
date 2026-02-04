@@ -37,9 +37,13 @@ public class Court {
     @Schema(description = "Indica se a quadra está disponível para reserva.", example = "true")
     private boolean isAvailable;
 
-    public void saveCourt(Court court){
-        if (court.getPricePerHour()<0){
-            throw new IllegalArgumentException("Court value cannot be negative");
+    public void validate() {
+        if (this.pricePerHour == null || this.pricePerHour < 0) {
+            throw new IllegalArgumentException("O valor da hora da quadra não pode ser negativo ou nulo.");
+        }
+
+        if (this.sportType == null) {
+            throw new IllegalArgumentException("O tipo de esporte é obrigatório para cadastrar uma quadra.");
         }
     }
 }

@@ -3,9 +3,22 @@ services:
     image: postgres:latest
     container_name: courtReserve
     environment:
-      POSTGRES_DB: court_reserve
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-court_reserve}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     restart: unless-stopped
+
+  app:
+    build: .
+    container_name: courtReserve-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-court_reserve}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
+      COURT_RESERVE_SECURITY_SECRET: ${JWT_SECRET:-minha-chave}
+    depends_on:
+      - postgres
