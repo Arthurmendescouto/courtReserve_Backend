@@ -3,6 +3,7 @@ package com.example.court_reserve.service;
 import com.example.court_reserve.controller.request.CourtRequest;
 import com.example.court_reserve.entity.Booking;
 import com.example.court_reserve.entity.Court;
+import com.example.court_reserve.entity.SportType;
 import com.example.court_reserve.entity.User;
 import com.example.court_reserve.repository.BookingRepository;
 import com.example.court_reserve.repository.CourtRepository;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +23,13 @@ public class CourtService {
     private final CourtRepository repository;
 
 
-    public Page<Court> findAll(Pageable pageable){
+    public Page<Court> findAll(Pageable pageable, SportType sportType, LocalDateTime start, LocalDateTime end){
+        if (start != null && end != null) {
+            return repository.findAvailableCourts(start, end, sportType, pageable);
+        }
+        if (sportType != null) {
+            return repository.findBySportType(sportType, pageable);
+        }
         return repository.findAll(pageable);
     }
     public Optional<Court> findById(Long id){

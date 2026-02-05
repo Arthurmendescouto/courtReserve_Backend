@@ -1,5 +1,6 @@
 package com.example.court_reserve.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import com.example.court_reserve.controller.request.CourtRequest;
 import com.example.court_reserve.controller.response.CourtResponse;
 import com.example.court_reserve.entity.Court;
+import com.example.court_reserve.entity.SportType;
 import com.example.court_reserve.mapper.CourtMapper;
 import com.example.court_reserve.service.CourtService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,8 +42,15 @@ public class CourtController {
         @ApiResponse(responseCode = "403", description = "Acesso proibido.")
     })
     @GetMapping
-    public ResponseEntity<Page<CourtResponse>> getAllCourts(@ParameterObject Pageable pageable){
-        Page<CourtResponse> page=courtService.findAll(pageable)
+    public ResponseEntity<Page<CourtResponse>> getAllCourts(
+            @ParameterObject Pageable pageable,
+            @RequestParam(required = false) SportType sportType,
+            @Parameter(description = "Data de início (ISO 8601)", example = "2024-12-21T14:00:00")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableFrom,
+            @Parameter(description = "Data de fim (ISO 8601)", example = "2024-12-21T15:00:00")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableTo
+    ){
+        Page<CourtResponse> page=courtService.findAll(pageable, sportType, availableFrom, availableTo)
                 .map(CourtMapper::toCourtResponse);
 
         return ResponseEntity.ok(page);
