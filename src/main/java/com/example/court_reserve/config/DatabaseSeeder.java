@@ -8,6 +8,7 @@ import com.example.court_reserve.repository.BookingRepository;
 import com.example.court_reserve.repository.CourtRepository;
 import com.example.court_reserve.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class DatabaseSeeder implements CommandLineRunner {
@@ -30,7 +32,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         bookingRepository.deleteAll();
         courtRepository.deleteAll();
         userRepository.deleteAll();
-        
+
         seedUsers();
         seedCourts();
         seedBookings();
@@ -46,7 +48,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedCourts() {
-            System.out.println(">> Populando banco de dados com quadras de teste...");
+            log.info(">> Populando banco de dados com quadras de teste...");
 
             List<Court> courts = Arrays.asList(
                     Court.builder().name("Arena Gol de Placa").sportType(SportType.FOOTBALL).pricePerHour(120.0).isAvailable(true).build(),
@@ -62,7 +64,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             );
             courtRepository.saveAll(courts);
 
-            System.out.println(">> " + courts.size() + " quadras inseridas com sucesso!");
+            log.info(">> {} quadras inseridas com sucesso!", courts.size());
     }
 
     private void seedBookings() {
@@ -90,7 +92,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build();
 
                 bookingRepository.save(booking);
-                System.out.println(">> Agendamento de teste criado para: " + start);
+                log.info(">> Agendamento de teste criado para: {}", start);
             }
     }
 }

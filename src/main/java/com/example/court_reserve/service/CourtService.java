@@ -25,7 +25,11 @@ public class CourtService {
 
     public Page<Court> findAll(Pageable pageable, SportType sportType, LocalDateTime start, LocalDateTime end, String name){
         if (start != null && end != null) {
-            return repository.findAvailableCourts(start, end, sportType, name, pageable);
+            String namePattern = null;
+            if (name != null && !name.isBlank()) {
+                namePattern = "%" + name.toLowerCase() + "%";
+            }
+            return repository.findAvailableCourts(start, end, sportType, namePattern, pageable);
         }
         if (name != null && !name.isBlank()) {
             return repository.findByNameContainingIgnoreCase(name, pageable);

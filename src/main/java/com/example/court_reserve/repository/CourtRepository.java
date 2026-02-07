@@ -20,8 +20,7 @@ public interface CourtRepository extends JpaRepository<Court,Long> {
 
     @Query("SELECT c FROM Court c WHERE " +
             "(:sportType IS NULL OR c.sportType = :sportType) AND " +
-            "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-            "c.isAvailable = true AND " +
+            "(:name IS NULL OR LOWER(c.name) LIKE :name) AND " +            "c.isAvailable = true AND " +
             "c.id NOT IN " +
             "(SELECT b.court.id FROM Booking b WHERE " +
             "(b.startDateTime < :end AND b.endDateTime > :start))")
