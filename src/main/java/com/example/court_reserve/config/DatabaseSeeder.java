@@ -26,45 +26,46 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Limpa o banco de dados antigo para garantir que as novas quadras (com nomes) sejam criadas
+        bookingRepository.deleteAll();
+        courtRepository.deleteAll();
+        userRepository.deleteAll();
+        
         seedUsers();
         seedCourts();
         seedBookings();
     }
 
     private void seedUsers() {
-        if (userRepository.count() == 0) {
             User user = User.builder()
+                    .name("Usuário Teste")
                     .email("teste@exemplo.com")
                     .password(new BCryptPasswordEncoder().encode("123456"))
                     .build();
             userRepository.save(user);
-        }
     }
 
     private void seedCourts() {
-        if (courtRepository.count() == 0) {
             System.out.println(">> Populando banco de dados com quadras de teste...");
 
             List<Court> courts = Arrays.asList(
-                    Court.builder().sportType(SportType.FOOTBALL).pricePerHour(120.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.TENNIS).pricePerHour(80.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.BASKETBALL).pricePerHour(100.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.VOLLEYBALL).pricePerHour(90.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.FOOTBALL).pricePerHour(150.0).isAvailable(false).build(),
-                    Court.builder().sportType(SportType.TENNIS).pricePerHour(210.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.BASKETBALL).pricePerHour(115.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.VOLLEYBALL).pricePerHour(85.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.FOOTBALL).pricePerHour(130.0).isAvailable(true).build(),
-                    Court.builder().sportType(SportType.TENNIS).pricePerHour(190.0).isAvailable(true).build()
+                    Court.builder().name("Arena Gol de Placa").sportType(SportType.FOOTBALL).pricePerHour(120.0).isAvailable(true).build(),
+                    Court.builder().name("Ace Tennis Club").sportType(SportType.TENNIS).pricePerHour(80.0).isAvailable(true).build(),
+                    Court.builder().name("Ginásio Jordan").sportType(SportType.BASKETBALL).pricePerHour(100.0).isAvailable(true).build(),
+                    Court.builder().name("Centro de Vôlei Saque").sportType(SportType.VOLLEYBALL).pricePerHour(90.0).isAvailable(true).build(),
+                    Court.builder().name("Estádio Manutenção").sportType(SportType.FOOTBALL).pricePerHour(150.0).isAvailable(false).build(),
+                    Court.builder().name("Grand Slam Arena").sportType(SportType.TENNIS).pricePerHour(210.0).isAvailable(true).build(),
+                    Court.builder().name("Quadra dos Campeões").sportType(SportType.BASKETBALL).pricePerHour(115.0).isAvailable(true).build(),
+                    Court.builder().name("Vôlei de Praia Indoor").sportType(SportType.VOLLEYBALL).pricePerHour(85.0).isAvailable(true).build(),
+                    Court.builder().name("Campo Society 7").sportType(SportType.FOOTBALL).pricePerHour(130.0).isAvailable(true).build(),
+                    Court.builder().name("Quadra Rápida Open").sportType(SportType.TENNIS).pricePerHour(190.0).isAvailable(true).build()
             );
             courtRepository.saveAll(courts);
 
             System.out.println(">> " + courts.size() + " quadras inseridas com sucesso!");
-        }
     }
 
     private void seedBookings() {
-        if (bookingRepository.count() == 0) {
             // Pega o usuário e as quadras criadas
             User user = userRepository.findAll().get(0);
             List<Court> courts = courtRepository.findAll();
@@ -91,6 +92,5 @@ public class DatabaseSeeder implements CommandLineRunner {
                 bookingRepository.save(booking);
                 System.out.println(">> Agendamento de teste criado para: " + start);
             }
-        }
     }
 }

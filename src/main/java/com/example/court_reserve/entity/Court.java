@@ -27,6 +27,9 @@ public class Court {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Schema(description = "Nome da quadra.", example = "Arena Futebol Clube")
+    private String name;
+
     @Schema(description = "Tipo de esporte da quadra.")
     @Enumerated(EnumType.STRING)
     private SportType sportType;
@@ -44,6 +47,10 @@ public class Court {
 
         if (this.sportType == null) {
             throw new IllegalArgumentException("O tipo de esporte é obrigatório para cadastrar uma quadra.");
+        }
+
+        if (this.name == null || this.name.isBlank()) {
+            throw new IllegalArgumentException("O nome da quadra é obrigatório.");
         }
     }
 }

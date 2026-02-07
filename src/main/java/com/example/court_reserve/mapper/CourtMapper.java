@@ -1,21 +1,15 @@
 package com.example.court_reserve.mapper;
 
-import com.example.court_reserve.controller.request.BookingRequest;
 import com.example.court_reserve.controller.request.CourtRequest;
 import com.example.court_reserve.controller.response.CourtResponse;
-import com.example.court_reserve.entity.Booking;
 import com.example.court_reserve.entity.Court;
-import com.example.court_reserve.entity.SportType;
-import com.example.court_reserve.entity.User;
 import lombok.experimental.UtilityClass;
-import org.apache.catalina.mapper.Mapper;
-
-import java.awt.print.Book;
 
 @UtilityClass
 public class CourtMapper {
     public static Court toCourt(CourtRequest request){
         return Court.builder()
+                .name(request.name())
                 .sportType(request.sportType())
                 .pricePerHour(request.pricePerHour())
                 .isAvailable(request.isAvailable())
@@ -24,6 +18,7 @@ public class CourtMapper {
     public static CourtResponse toCourtResponse(Court court){
         return CourtResponse.builder()
                 .id(court.getId())
+                .name(court.getName())
                 .sportType(court.getSportType())
                 .pricePerHour(court.getPricePerHour())
                 .isAvailable(court.isAvailable())

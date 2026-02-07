@@ -23,9 +23,12 @@ public class CourtService {
     private final CourtRepository repository;
 
 
-    public Page<Court> findAll(Pageable pageable, SportType sportType, LocalDateTime start, LocalDateTime end){
+    public Page<Court> findAll(Pageable pageable, SportType sportType, LocalDateTime start, LocalDateTime end, String name){
         if (start != null && end != null) {
-            return repository.findAvailableCourts(start, end, sportType, pageable);
+            return repository.findAvailableCourts(start, end, sportType, name, pageable);
+        }
+        if (name != null && !name.isBlank()) {
+            return repository.findByNameContainingIgnoreCase(name, pageable);
         }
         if (sportType != null) {
             return repository.findBySportType(sportType, pageable);
@@ -55,6 +58,9 @@ public class CourtService {
         Court court = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Court não encontrado para o id: " + id));
 
+        if (request.name() != null) {
+            court.setName(request.name());
+        }
         if (request.sportType() != null) {
             court.setSportType(request.sportType());
         }

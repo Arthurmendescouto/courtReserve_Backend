@@ -10,6 +10,8 @@ import lombok.Builder;
 public record CourtResponse(
         @Schema(description = "ID da quadra.", example = "1")
         Long id,
+        @Schema(description = "Nome da quadra.", example = "Arena Futebol Clube")
+        String name,
         @Schema(description = "Tipo de esporte da quadra.")
         SportType sportType,
         @Schema(description = "Preço por hora da quadra.", example = "120.00")

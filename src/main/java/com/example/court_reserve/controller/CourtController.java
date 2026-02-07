@@ -45,12 +45,14 @@ public class CourtController {
     public ResponseEntity<Page<CourtResponse>> getAllCourts(
             @ParameterObject Pageable pageable,
             @RequestParam(required = false) SportType sportType,
+            @Parameter(description = "Nome da quadra para busca textual")
+            @RequestParam(required = false) String name,
             @Parameter(description = "Data de início (ISO 8601)", example = "2024-12-21T14:00:00")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableFrom,
             @Parameter(description = "Data de fim (ISO 8601)", example = "2024-12-21T15:00:00")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime availableTo
     ){
-        Page<CourtResponse> page=courtService.findAll(pageable, sportType, availableFrom, availableTo)
+        Page<CourtResponse> page=courtService.findAll(pageable, sportType, availableFrom, availableTo, name)
                 .map(CourtMapper::toCourtResponse);
 
         return ResponseEntity.ok(page);

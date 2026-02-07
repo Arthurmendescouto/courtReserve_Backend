@@ -15,8 +15,12 @@ public interface CourtRepository extends JpaRepository<Court,Long> {
 
     Page<Court> findBySportType(SportType sportType, Pageable pageable);
 
+    // Filtro simples por nome (Case Insensitive)
+    Page<Court> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
     @Query("SELECT c FROM Court c WHERE " +
             "(:sportType IS NULL OR c.sportType = :sportType) AND " +
+            "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "c.isAvailable = true AND " +
             "c.id NOT IN " +
             "(SELECT b.court.id FROM Booking b WHERE " +
@@ -24,6 +28,7 @@ public interface CourtRepository extends JpaRepository<Court,Long> {
     Page<Court> findAvailableCourts(@Param("start") LocalDateTime start,
                                     @Param("end") LocalDateTime end,
                                     @Param("sportType") SportType sportType,
+                                    @Param("name") String name,
                                     Pageable pageable);
 
 }
