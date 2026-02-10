@@ -6,7 +6,6 @@ import com.example.court_reserve.entity.SportType;
 import com.example.court_reserve.repository.CourtRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
