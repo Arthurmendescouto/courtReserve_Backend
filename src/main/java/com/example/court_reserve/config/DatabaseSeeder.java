@@ -28,14 +28,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Limpa o banco de dados antigo para garantir que as novas quadras (com nomes) sejam criadas
-        bookingRepository.deleteAll();
-        courtRepository.deleteAll();
-        userRepository.deleteAll();
-
-        seedUsers();
-        seedCourts();
-        seedBookings();
+        if (courtRepository.count() == 0) {
+            seedUsers();
+            seedCourts();
+            seedBookings();
+        }
     }
 
     private void seedUsers() {

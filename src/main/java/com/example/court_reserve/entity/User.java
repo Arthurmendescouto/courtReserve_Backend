@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,12 +22,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "User", description = "Entidade que representa um usuário do sistema.")
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
 @Table(name = "users")
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class User implements UserDetails {
     @Schema(description = "Identificador único do usuário.", example = "1")
     @Id
@@ -45,6 +46,39 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    // --- MÉTODOS DE DOMÍNIO (RICH MODEL) ---
+
+    public static User create(String name, String email, String password) {
+        User user = User.builder()
+                .name(name)
+                .email(email)
+                .password(password)
+                .build();
+        
+        user.validate();
+        return user;
+    }
+
+    public void update(String name, String password) {
+        if (name != null) this.name = name;
+        if (password != null) this.password = password;
+        validate();
+    }
+
+    private void validate() {
+        if (this.name == null || this.name.trim().isEmpty()) {
+            throw new IllegalArgumentException("O nome do usuário é obrigatório.");
+        }
+        if (this.email == null || !this.email.contains("@")) {
+            throw new IllegalArgumentException("O e-mail informado é inválido.");
+        }
+        if (this.password == null || this.password.trim().isEmpty()) {
+            throw new IllegalArgumentException("A senha é obrigatória.");
+        }
+    }
+
+    // --- SPRING SECURITY ---
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -52,7 +86,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return "";
+        return this.email;
     }
 
     @Override

@@ -9,7 +9,6 @@ import com.example.court_reserve.repository.CourtRepository;
 import com.example.court_reserve.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,45 +39,23 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(BookingRequest request) {
-        // 1. Validações e Limpeza de Data (Zera segundos e milissegundos para comparação literal)
-        if (request.startDateTime() == null || request.endDateTime() == null) {
-            throw new IllegalArgumentException("Datas são obrigatórias.");
-        }
-
-        LocalDateTime start = request.startDateTime().withSecond(0).withNano(0);
-        LocalDateTime end = request.endDateTime().withSecond(0).withNano(0);
-
-        if (start.isAfter(end) || start.isEqual(end)) {
-            throw new IllegalArgumentException("Data de início deve ser anterior ao fim.");
-        }
-
-        // Comparamos com o 'agora' também zerado para evitar erros de milésimos no envio do JSON
-        if (start.isBefore(LocalDateTime.now().withSecond(0).withNano(0))) {
-            throw new IllegalArgumentException("Não é possível agendar no passado.");
-        }
-
-        // 2. Buscar Entidades
+        // 1. Buscar Entidades
         Court court = courtRepository.findById(request.courtId())
                 .orElseThrow(() -> new EntityNotFoundException("Quadra não encontrada."));
 
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
-        // 3. Verificar Conflito de Horário (Usando as datas limpas e excluindo ID -1)
+        // 2. Criar a Entidade usando o Modelo Rico (Validações e Preço acontecem aqui)
+        Booking booking = Booking.create(user, court, request.startDateTime(), request.endDateTime());
+
+        // 3. Verificar Conflito de Horário
         boolean hasConflict = bookingRepository.existsConflictExcludingId(
-                court.getId(), start, end, -1L);
+                court.getId(), booking.getStartDateTime(), booking.getEndDateTime(), -1L);
 
         if (hasConflict) {
             throw new IllegalArgumentException("Já existe reserva para este horário nesta quadra.");
         }
-
-        // 4. Salvar (Salvando os valores zerados para garantir consistência no banco)
-        Booking booking = Booking.builder()
-                .court(court)
-                .user(user)
-                .startDateTime(start)
-                .endDateTime(end)
-                .build();
 
         return bookingRepository.save(booking);
     }
@@ -86,7 +63,7 @@ public class BookingService {
     @Transactional
     public void delete(Long id) {
         if (!bookingRepository.existsById(id)) {
-            throw new EmptyResultDataAccessException("Reserva não encontrada com o ID: " + id, 1);
+            throw new EntityNotFoundException("Reserva não encontrada com o ID: " + id);
         }
         bookingRepository.deleteById(id);
     }
@@ -96,29 +73,24 @@ public class BookingService {
         Booking existingBooking = bookingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva não encontrada com o ID: " + id));
 
-        // Limpa as datas vindo do request ou usa as já existentes no banco (também limpas)
-        LocalDateTime start = request.startDateTime() != null
-                ? request.startDateTime().withSecond(0).withNano(0)
-                : existingBooking.getStartDateTime().withSecond(0).withNano(0);
+        // Define as novas datas (ou mantém as antigas)
+        LocalDateTime newStart = request.startDateTime() != null ? request.startDateTime() : existingBooking.getStartDateTime();
+        LocalDateTime newEnd = request.endDateTime() != null ? request.endDateTime() : existingBooking.getEndDateTime();
 
-        LocalDateTime end = request.endDateTime() != null
-                ? request.endDateTime().withSecond(0).withNano(0)
-                : existingBooking.getEndDateTime().withSecond(0).withNano(0);
-
-        if (end.isBefore(start) || end.isEqual(start)) {
-            throw new IllegalArgumentException("O horário de término deve ser posterior ao horário de início.");
-        }
+        // Recria um objeto temporário para validar as regras (datas, preço, etc)
+        Booking tempValido = Booking.create(existingBooking.getUser(), existingBooking.getCourt(), newStart, newEnd);
 
         // Verifica conflito ignorando a própria reserva que está sendo editada
         boolean hasConflict = bookingRepository.existsConflictExcludingId(
-                existingBooking.getCourt().getId(), start, end, id);
+                existingBooking.getCourt().getId(), tempValido.getStartDateTime(), tempValido.getEndDateTime(), id);
 
         if (hasConflict) {
             throw new IllegalArgumentException("O novo horário escolhido conflita com outra reserva existente.");
         }
 
-        existingBooking.setStartDateTime(start);
-        existingBooking.setEndDateTime(end);
+        existingBooking.setStartDateTime(tempValido.getStartDateTime());
+        existingBooking.setEndDateTime(tempValido.getEndDateTime());
+        existingBooking.setTotalPrice(tempValido.getTotalPrice()); // Atualiza o preço caso o horário tenha mudado
 
         return bookingRepository.save(existingBooking);
     }

@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CourtService {
-    private final CourtRepository repository;
+    private final CourtRepository courtRepository;
 
     public Page<Court> findAll(Pageable pageable, SportType sportType, LocalDateTime start, LocalDateTime end, String name) {
         if (start != null && end != null) {
@@ -31,51 +31,47 @@ public class CourtService {
             if (name != null && !name.isBlank()) {
                 namePattern = "%" + name.toLowerCase() + "%";
             }
-            return repository.findAvailableCourts(cleanStart, cleanEnd, sportType, namePattern, pageable);
+            return courtRepository.findAvailableCourts(cleanStart, cleanEnd, sportType, namePattern, pageable);
         }
 
         if (name != null && !name.isBlank()) {
-            return repository.findByNameContainingIgnoreCase(name, pageable);
+            return courtRepository.findByNameContainingIgnoreCase(name, pageable);
         }
         if (sportType != null) {
-            return repository.findBySportType(sportType, pageable);
+            return courtRepository.findBySportType(sportType, pageable);
         }
-        return repository.findAll(pageable);
+        return courtRepository.findAll(pageable);
     }
 
     public Optional<Court> findById(Long id) {
-        return repository.findById(id);
+        return courtRepository.findById(id);
     }
 
     @Transactional
     public Court save(Court court) {
-        court.validate();
-        return repository.save(court);
+        return courtRepository.save(court);
     }
 
     @Transactional
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
+        if (!courtRepository.existsById(id)) {
             throw new EntityNotFoundException("Quadra não encontrada com o ID: " + id);
         }
-        repository.deleteById(id);
+        courtRepository.deleteById(id);
     }
 
     @Transactional
     public Court updateCourt(Long id, CourtRequest request) {
-        Court court = repository.findById(id)
+        Court court = courtRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Quadra não encontrada para o id: " + id));
 
-        if (request.name() != null) court.setName(request.name());
-        if (request.sportType() != null) court.setSportType(request.sportType());
-        if (request.pricePerHour() != null) court.setPricePerHour(request.pricePerHour());
-        if (request.isAvailable() != null) court.setAvailable(request.isAvailable());
+        // Usa o método de domínio para atualizar e validar
+        court.update(request.name(), request.sportType(), request.pricePerHour(), request.isAvailable());
 
-        court.validate();
-        return repository.save(court);
+        return courtRepository.save(court);
     }
 
     public long count() {
-        return repository.count();
+        return courtRepository.count();
     }
 }

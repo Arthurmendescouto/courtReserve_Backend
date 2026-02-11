@@ -42,10 +42,8 @@ class BookingServiceTest {
         LocalDateTime fim = inicio.plusHours(1);
         BookingRequest request = new BookingRequest(1L,1L,inicio,fim);
 
-        Court courtFalsa = new Court();
-        courtFalsa.setId(1L);
-        User userFalso = new User();
-        userFalso.setId(1L);
+        Court courtFalsa = Court.builder().id(1L).build();
+        User userFalso = User.builder().id(1L).build();
 
         when(courtRepository.findById(1L)).thenReturn(Optional.of(courtFalsa));
         when(userRepository.findById(1L)).thenReturn(Optional.of(userFalso));

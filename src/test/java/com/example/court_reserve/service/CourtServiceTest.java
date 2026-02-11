@@ -30,7 +30,6 @@ class CourtServiceTest {
     @Test
     @DisplayName("Deve criar quadra com sucesso")
     void deveCriarQuadra() {
-        CourtRequest request = new CourtRequest("Quadra 1", SportType.FOOTBALL, 100.0, true);
         Court courtSalva = Court.builder().id(1L).name("Quadra 1").build();
 
         when(courtRepository.save(any(Court.class))).thenReturn(courtSalva);

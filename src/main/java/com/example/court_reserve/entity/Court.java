@@ -8,14 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder(access = AccessLevel.PRIVATE) // Só a própria classe pode usar o Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA exige, mas protegemos de uso externo
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Setter
 @Schema(name = "Court", description = "Entidade que representa uma quadra esportiva.")
@@ -40,7 +41,27 @@ public class Court {
     @Schema(description = "Indica se a quadra está disponível para reserva.", example = "true")
     private boolean isAvailable;
 
-    public void validate() {
+    public static Court create(String name, SportType sportType, Double pricePerHour, boolean isAvailable) {
+        Court court = Court.builder()
+                .name(name)
+                .sportType(sportType)
+                .pricePerHour(pricePerHour)
+                .isAvailable(isAvailable)
+                .build();
+        
+        court.validate();
+        return court;
+    }
+
+    public void update(String name, SportType sportType, Double pricePerHour, Boolean isAvailable) {
+        if (name != null) this.name = name;
+        if (sportType != null) this.sportType = sportType;
+        if (pricePerHour != null) this.pricePerHour = pricePerHour;
+        if (isAvailable != null) this.isAvailable = isAvailable;
+        validate();
+    }
+
+    private void validate() {
         if (this.pricePerHour == null || this.pricePerHour < 0) {
             throw new IllegalArgumentException("O valor da hora da quadra não pode ser negativo ou nulo.");
         }
