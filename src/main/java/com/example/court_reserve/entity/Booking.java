@@ -64,6 +64,11 @@ public class Booking {
             throw new IllegalArgumentException("Todos os dados (usuário, quadra e datas) são obrigatórios.");
         }
 
+        // Validação de Disponibilidade da Quadra (Manutenção/Fechada)
+        if (!court.isAvailable()) {
+            throw new IllegalArgumentException("Esta quadra está indisponível para reservas no momento.");
+        }
+
         LocalDateTime start = rawStart.withSecond(0).withNano(0);
         LocalDateTime end = rawEnd.withSecond(0).withNano(0);
 
@@ -76,6 +81,11 @@ public class Booking {
         }
 
         double durationInHours = Duration.between(start, end).toMinutes() / 60.0;
+
+        // Proteção de Horário: Limites de duração (Mínimo 1h, Máximo 4h)
+        if (durationInHours < 1.0 || durationInHours > 4.0) {
+            throw new IllegalArgumentException("A duração do agendamento deve ser entre 1 e 4 horas.");
+        }
 
         double finalPrice = court.getPricePerHour() * durationInHours;
 

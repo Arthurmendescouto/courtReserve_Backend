@@ -30,16 +30,12 @@ class CourtServiceTest {
     @Test
     @DisplayName("Deve criar quadra com sucesso")
     void deveCriarQuadra() {
-        Court courtSalva = Court.builder().id(1L).name("Quadra 1").build();
+        Court courtSalva = Court.create("Quadra 1", SportType.FOOTBALL, 100.0, true);
+        courtSalva.setId(1L);
 
         when(courtRepository.save(any(Court.class))).thenReturn(courtSalva);
 
-        Court courtParaSalvar = Court.builder()
-                .name("Quadra 1")
-                .sportType(SportType.FOOTBALL)
-                .pricePerHour(100.0)
-                .isAvailable(true)
-                .build();
+        Court courtParaSalvar = Court.create("Quadra 1", SportType.FOOTBALL, 100.0, true);
 
         Court resultado = courtService.save(courtParaSalvar);
 
@@ -52,7 +48,8 @@ class CourtServiceTest {
     void deveAtualizarQuadra() {
         Long id = 1L;
         CourtRequest request = new CourtRequest("Nome Novo", SportType.TENNIS, 150.0, true);
-        Court courtExistente = Court.builder().id(id).name("Nome Antigo").sportType(SportType.FOOTBALL).pricePerHour(100.0).build();
+        Court courtExistente = Court.create("Nome Antigo", SportType.FOOTBALL, 100.0, true);
+        courtExistente.setId(id);
 
         when(courtRepository.findById(id)).thenReturn(Optional.of(courtExistente));
         when(courtRepository.save(any(Court.class))).thenAnswer(i -> i.getArguments()[0]);

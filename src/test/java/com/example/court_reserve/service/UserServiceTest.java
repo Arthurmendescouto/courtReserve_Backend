@@ -32,8 +32,8 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve salvar usuário com sucesso")
     void deveSalvarUsuario() {
-        User user = User.builder().name("Teste").email("teste@email.com").password("123").build();
-
+        User user = User.create("Teste", "teste@email.com", "123");
+        
         when(passwordEncoder.encode(any())).thenReturn("senhaCriptografada");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
@@ -47,7 +47,8 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve encontrar usuário por ID existente")
     void deveEncontrarUsuarioPorId() {
-        User user = User.builder().id(1L).name("Teste").build();
+        User user = User.create("Teste", "teste@email.com", "123");
+        user.setId(1L); // Define o ID para o teste passar
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         Optional<User> encontrado = userService.findById(1L);

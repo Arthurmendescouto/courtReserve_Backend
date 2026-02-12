@@ -36,11 +36,11 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
-            User user = User.builder()
-                    .name("Usuário Teste")
-                    .email("teste@exemplo.com")
-                    .password(new BCryptPasswordEncoder().encode("123456"))
-                    .build();
+            User user = User.create(
+                    "Usuário Teste",
+                    "teste@exemplo.com",
+                    new BCryptPasswordEncoder().encode("123456")
+            );
             userRepository.save(user);
     }
 
@@ -48,16 +48,16 @@ public class DatabaseSeeder implements CommandLineRunner {
             log.info(">> Populando banco de dados com quadras de teste...");
 
             List<Court> courts = Arrays.asList(
-                    Court.builder().name("Arena Gol de Placa").sportType(SportType.FOOTBALL).pricePerHour(120.0).isAvailable(true).build(),
-                    Court.builder().name("Ace Tennis Club").sportType(SportType.TENNIS).pricePerHour(80.0).isAvailable(true).build(),
-                    Court.builder().name("Ginásio Jordan").sportType(SportType.BASKETBALL).pricePerHour(100.0).isAvailable(true).build(),
-                    Court.builder().name("Centro de Vôlei Saque").sportType(SportType.VOLLEYBALL).pricePerHour(90.0).isAvailable(true).build(),
-                    Court.builder().name("Estádio Manutenção").sportType(SportType.FOOTBALL).pricePerHour(150.0).isAvailable(false).build(),
-                    Court.builder().name("Grand Slam Arena").sportType(SportType.TENNIS).pricePerHour(210.0).isAvailable(true).build(),
-                    Court.builder().name("Quadra dos Campeões").sportType(SportType.BASKETBALL).pricePerHour(115.0).isAvailable(true).build(),
-                    Court.builder().name("Vôlei de Praia Indoor").sportType(SportType.VOLLEYBALL).pricePerHour(85.0).isAvailable(true).build(),
-                    Court.builder().name("Campo Society 7").sportType(SportType.FOOTBALL).pricePerHour(130.0).isAvailable(true).build(),
-                    Court.builder().name("Quadra Rápida Open").sportType(SportType.TENNIS).pricePerHour(190.0).isAvailable(true).build()
+                    Court.create("Arena Gol de Placa", SportType.FOOTBALL, 120.0, true),
+                    Court.create("Ace Tennis Club", SportType.TENNIS, 80.0, true),
+                    Court.create("Ginásio Jordan", SportType.BASKETBALL, 100.0, true),
+                    Court.create("Centro de Vôlei Saque", SportType.VOLLEYBALL, 90.0, true),
+                    Court.create("Estádio Manutenção", SportType.FOOTBALL, 150.0, false),
+                    Court.create("Grand Slam Arena", SportType.TENNIS, 210.0, true),
+                    Court.create("Quadra dos Campeões", SportType.BASKETBALL, 115.0, true),
+                    Court.create("Vôlei de Praia Indoor", SportType.VOLLEYBALL, 85.0, true),
+                    Court.create("Campo Society 7", SportType.FOOTBALL, 130.0, true),
+                    Court.create("Quadra Rápida Open", SportType.TENNIS, 190.0, true)
             );
             courtRepository.saveAll(courts);
 
@@ -81,12 +81,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 LocalDateTime start = LocalDateTime.of(2024, 12, 21, 14, 0, 0);
                 LocalDateTime end = start.plusHours(1);
 
-                Booking booking = Booking.builder()
-                        .user(user)
-                        .court(footballCourt)
-                        .startDateTime(start)
-                        .endDateTime(end)
-                        .build();
+                Booking booking = Booking.create(user, footballCourt, start, end);
 
                 bookingRepository.save(booking);
                 log.info(">> Agendamento de teste criado para: {}", start);

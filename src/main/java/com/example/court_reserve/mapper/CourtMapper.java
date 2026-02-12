@@ -8,12 +8,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CourtMapper {
     public static Court toCourt(CourtRequest request){
-        return Court.builder()
-                .name(request.name())
-                .sportType(request.sportType())
-                .pricePerHour(request.pricePerHour())
-                .isAvailable(request.isAvailable())
-                .build();
+        return Court.create(
+                request.name(),
+                request.sportType(),
+                request.pricePerHour(),
+                request.isAvailable()
+        );
     }
     public static CourtResponse toCourtResponse(Court court){
         return CourtResponse.builder()
