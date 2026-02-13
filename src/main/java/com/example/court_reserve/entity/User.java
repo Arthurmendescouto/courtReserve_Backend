@@ -4,10 +4,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,13 +49,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     // --- MÉTODOS DE DOMÍNIO (RICH MODEL) ---
 
-    public static User create(String name, String email, String password) {
+    public static User create(String name, String email, String password, Role role) {
         User user = User.builder()
                 .name(name)
                 .email(email)
                 .password(password)
+                .role(role)
                 .build();
         
         user.validate();
@@ -75,13 +83,16 @@ public class User implements UserDetails {
         if (this.password == null || this.password.trim().isEmpty()) {
             throw new IllegalArgumentException("A senha é obrigatória.");
         }
+        if (this.role == null) {
+            throw new IllegalArgumentException("O perfil (Role) do usuário é obrigatório.");
+        }
     }
 
     // --- SPRING SECURITY ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override

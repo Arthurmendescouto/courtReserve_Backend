@@ -2,6 +2,7 @@ package com.example.court_reserve.config;
 
 import com.example.court_reserve.entity.Booking;
 import com.example.court_reserve.entity.Court;
+import com.example.court_reserve.entity.Role;
 import com.example.court_reserve.entity.SportType;
 import com.example.court_reserve.entity.User;
 import com.example.court_reserve.repository.BookingRepository;
@@ -36,12 +37,21 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
-            User user = User.create(
-                    "Usuário Teste",
-                    "teste@exemplo.com",
-                    new BCryptPasswordEncoder().encode("123456")
+            User admin = User.create(
+                    "Admin do Sistema",
+                    "admin@exemplo.com",
+                    new BCryptPasswordEncoder().encode("123456"),
+                    Role.ADMIN
             );
-            userRepository.save(user);
+            userRepository.save(admin);
+
+            User client = User.create(
+                    "Cliente Jogador",
+                    "cliente@exemplo.com",
+                    new BCryptPasswordEncoder().encode("123456"),
+                    Role.CLIENT
+            );
+            userRepository.save(client);
     }
 
     private void seedCourts() {
@@ -77,8 +87,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             if (footballCourt != null) {
                 // Cria um agendamento para AMANHÃ das 14:00 às 15:00
-                // Fixando a data para bater com o exemplo do Swagger (21/12/2024)
-                LocalDateTime start = LocalDateTime.of(2024, 12, 21, 14, 0, 0);
+                // Usando uma data futura para não falhar na validação de "agendamento no passado"
+                LocalDateTime start = LocalDateTime.now().plusDays(1).withHour(14).withMinute(0).withSecond(0).withNano(0);
                 LocalDateTime end = start.plusHours(1);
 
                 Booking booking = Booking.create(user, footballCourt, start, end);
