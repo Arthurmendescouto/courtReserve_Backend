@@ -16,8 +16,12 @@ import com.example.court_reserve.controller.response.BookingResponse;
 import com.example.court_reserve.entity.Booking;
 import com.example.court_reserve.mapper.BookingMapper;
 import com.example.court_reserve.service.BookingService;
+import jakarta.persistence.EntityNotFoundException;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -60,22 +64,64 @@ public class BookingController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Criar agendamento", description = "Cria um novo agendamento.")
+    @Operation(
+            summary = "Criar agendamento",
+            description = "Cria um novo agendamento. **Nota:** Reservas para quadras de TÊNIS sofrem um acréscimo de 50% no valor da hora aos sábados e domingos."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Agendamento criado com sucesso."),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos."),
-            @ApiResponse(responseCode = "404", description = "Usuário ou quadra não encontrado."),
-            @ApiResponse(responseCode = "401", description = "Não autorizado"),
-            @ApiResponse(responseCode = "403", description = "Acesso proibido.")
+            @ApiResponse(responseCode = "201", description = "Agendamento criado com sucesso.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BookingResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Exemplo de Sucesso",
+                                    summary = "Resposta para um agendamento bem-sucedido",
+                                    value = """
+                                            {
+                                              "id": 1,
+                                              "startDateTime": "2030-02-16T10:00:00",
+                                              "endDateTime": "2030-02-16T11:00:00",
+                                              "totalPrice": 120.0,
+                                              "user": { "id": 2, "name": "Cliente Jogador", "email": "cliente@exemplo.com" },
+                                              "court": { "id": 2, "name": "Ace Tennis Club", "sportType": "TENNIS", "pricePerHour": 80.0 }
+                                            }"""))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou conflito de horário.",
+                    content = @Content(mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "Conflito de Horário", summary = "Horário já reservado", value = "{\"message\": \"Já existe reserva para este horário nesta quadra.\"}"),
+                                    @ExampleObject(name = "Datas Inválidas", summary = "Data de início após o fim", value = "{\"message\": \"Data de início deve ser anterior ao fim.\"}")
+                            })),
+            @ApiResponse(responseCode = "404", description = "Usuário ou Quadra não encontrado.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(name = "Entidade não encontrada", value = "{\"message\": \"Quadra não encontrada.\"}")))
     })
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request) {
+    public ResponseEntity<BookingResponse> createBooking(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Dados para criação da reserva",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Exemplo de Requisição",
+                                    value = """
+                                            {
+                                              "userId": 2,
+                                              "courtId": 2,
+                                              "startDateTime": "2030-02-16T10:00:00",
+                                              "endDateTime": "2030-02-16T11:00:00"
+                                            }"""
+                            )
+                    )
+            )
+            @RequestBody BookingRequest request) {
         Booking saved = bookingService.createBooking(request);
         return ResponseEntity.created(URI.create("/court_reserve/bookings/" + saved.getId()))
                 .body(BookingMapper.toBookingResponse(saved));
     }
 
-    @Operation(summary = "Atualizar agendamento", description = "Atualiza um agendamento existente.")
+    @Operation(
+            summary = "Atualizar agendamento",
+            description = "Atualiza um agendamento existente. O preço total será recalculado automaticamente com base nos novos horários e regras de fim de semana."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Agendamento atualizado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Agendamento não encontrado."),
@@ -86,6 +132,20 @@ public class BookingController {
     @PatchMapping("/{id}")
     public ResponseEntity<BookingResponse> updateBooking(
             @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            examples = @ExampleObject(
+                                    name = "Exemplo de Atualização",
+                                    value = """
+                                            {
+                                              "userId": 2,
+                                              "courtId": 2,
+                                              "startDateTime": "2030-02-16T12:00:00",
+                                              "endDateTime": "2030-02-16T13:00:00"
+                                            }"""
+                            )
+                    )
+            )
             @RequestBody BookingRequest request) {
 
         Booking updatedBooking = bookingService.update(id, request);
@@ -104,24 +164,17 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @ExceptionHandler(org.springframework.dao.EmptyResultDataAccessException.class)
-    public ResponseEntity<Map<String, String>> handleEmptyResult(org.springframework.dao.EmptyResultDataAccessException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Agendamento não encontrado. O ID informado não existe."));
-    }
-
-    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", ex.getMessage()));
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", ex.getMessage()));
+                .body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", ex.getMessage()));
     }
 }
