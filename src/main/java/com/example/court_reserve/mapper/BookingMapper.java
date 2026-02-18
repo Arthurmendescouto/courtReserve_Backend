@@ -25,6 +25,7 @@ public class BookingMapper {
                 user.getId(),
                 user.getName(),
                 user.getEmail()
+                ,user.getRole()
         );
 
         BookingResponse.CourtInfo courtInfo = new BookingResponse.CourtInfo(

@@ -2,6 +2,7 @@ package com.example.court_reserve.controller.response;
 
 import java.time.LocalDateTime;
 
+import com.example.court_reserve.entity.Role;
 import com.example.court_reserve.entity.SportType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -27,7 +28,9 @@ public record BookingResponse(
             @Schema(description = "Nome do usuário.", example = "João Silva")
             String name,
             @Schema(description = "E-mail do usuário.", example = "joao@email.com")
-            String email){}
+            String email,
+            @Schema(description = "Perfil de acesso do usuário.", example = "CLIENT")
+            Role role){}
 
     @Schema(name = "CourtInfo", description = "Informações da quadra na resposta de agendamento.")
     public record CourtInfo(

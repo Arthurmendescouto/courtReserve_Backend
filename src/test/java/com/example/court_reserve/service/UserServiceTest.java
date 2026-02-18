@@ -1,5 +1,6 @@
 package com.example.court_reserve.service;
 
+import com.example.court_reserve.entity.Role;
 import com.example.court_reserve.entity.User;
 import com.example.court_reserve.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,8 +33,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve salvar usuário com sucesso")
     void deveSalvarUsuario() {
-        User user = User.create("Teste", "teste@email.com", "123");
-        
+        User user = User.create("Teste", "teste@email.com", "123", Role.CLIENT);
         when(passwordEncoder.encode(any())).thenReturn("senhaCriptografada");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
@@ -41,14 +41,14 @@ class UserServiceTest {
 
         assertNotNull(salvo);
         assertEquals("Teste", salvo.getName());
+        assertEquals(Role.CLIENT, salvo.getRole()); // Verifica se o perfil foi salvo corretamente
         verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     @DisplayName("Deve encontrar usuário por ID existente")
     void deveEncontrarUsuarioPorId() {
-        User user = User.create("Teste", "teste@email.com", "123");
-        user.setId(1L); // Define o ID para o teste passar
+        User user = User.create("Teste", "teste@email.com", "123", Role.CLIENT);        user.setId(1L); // Define o ID para o teste passar
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         Optional<User> encontrado = userService.findById(1L);

@@ -11,6 +11,7 @@ public class UserMapper {
     public static User toUser(UserRequest request) {
         if (request == null) return null;
         return User.create(request.name(), request.email(), request.password(), Role.CLIENT);
+
     }
 
     public static UserResponse toUserResponse(User user) {

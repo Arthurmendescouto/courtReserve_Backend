@@ -23,6 +23,7 @@ public class TokenService {
                 .withSubject(user.getEmail())
                 .withClaim("userId", user.getId())
                 .withClaim("name", user.getName())
+                .withClaim("role", user.getRole().name())
                 .withExpiresAt(Instant.now().plusSeconds(86400))
                 .withIssuer("API CourtReserve")
                 .sign(algorithm);
@@ -41,6 +42,7 @@ public class TokenService {
                     .userId(jwt.getClaim("userId").asLong())
                     .name(jwt.getClaim("name").asString())
                     .email(jwt.getSubject())
+                    .role(jwt.getClaim("role").asString())
                     .build());
 
         } catch (JWTVerificationException ex) {
