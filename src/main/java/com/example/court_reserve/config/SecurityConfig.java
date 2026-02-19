@@ -33,9 +33,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/swagger/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/court_reserve/auth/test-exception").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/court_reserve/courts").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/court_reserve/courts/{id}").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/court_reserve/courts/{id}").hasAuthority("ROLE_ADMIN")
+
 
                         .anyRequest().authenticated()
                 )
+
+                .exceptionHandling(handling -> handling
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"error\": \"Acesso proibido. Apenas administradores podem realizar esta ação.\"}");
+                        })
+                )
+
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
